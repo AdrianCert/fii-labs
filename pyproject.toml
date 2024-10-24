@@ -6,9 +6,17 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "nltk>=3.9.1",
+    "pandas>=2.2.3",
     "pip>=24.2",
+    "pyautogui>=0.9.54",
     "sentencepiece>=0.2.0",
     "spacy>=3.8.2",
     "torch>=2.4.1",
     "transformers>=4.45.2",
 ]
+
+[tool.ruff]
+show-fixes = true
+
+[tool.ruff.lint]
+extend-select = ["C4", "SIM", "TCH", "I", "N", "PTH"]
