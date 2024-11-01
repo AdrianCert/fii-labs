@@ -13,7 +13,7 @@ class NgramLanguageModel:
 
     def preprocess_text(self, text):
         text = text.lower()
-        text = re.sub(r'[^\w\s]', '', text)
+        text = re.sub(r"[^\w\s]", "", text)
         tokens = nltk.word_tokenize(text)
         return tokens
 
@@ -24,30 +24,50 @@ class NgramLanguageModel:
             tokens = corpus
 
         self.unigram_freqs = Counter(tokens)
-        
-        ngrams = list(nltk.ngrams(tokens, self.n_gram, pad_right=True, pad_left=True, 
-                                  left_pad_symbol="<s>", right_pad_symbol="</s>"))
+
+        ngrams = list(
+            nltk.ngrams(
+                tokens,
+                self.n_gram,
+                pad_right=True,
+                pad_left=True,
+                left_pad_symbol="<s>",
+                right_pad_symbol="</s>",
+            )
+        )
         self.ngram_freqs = Counter(ngrams)
-        
+
         self.vocabulary_size = len(set(tokens))
 
     def laplace_smoothing(self):
         smoothed_model = defaultdict(float)
         for ngram in self.ngram_freqs:
-            smoothed_model[ngram] = (self.ngram_freqs[ngram] + 1) / (self.unigram_freqs[ngram[:-1]] + self.vocabulary_size)
+            smoothed_model[ngram] = (self.ngram_freqs[ngram] + 1) / (
+                self.unigram_freqs[ngram[:-1]] + self.vocabulary_size
+            )
         return smoothed_model
 
     def calculate_sentence_probability(self, sentence):
         tokens = self.preprocess_text(sentence)
-        ngrams = list(nltk.ngrams(tokens, self.n_gram, pad_right=True, pad_left=True, 
-                                  left_pad_symbol="<s>", right_pad_symbol="</s>"))
+        ngrams = list(
+            nltk.ngrams(
+                tokens,
+                self.n_gram,
+                pad_right=True,
+                pad_left=True,
+                left_pad_symbol="<s>",
+                right_pad_symbol="</s>",
+            )
+        )
         # breakpoint()
         smoothed_model = self.laplace_smoothing()
 
         probability = 1.0
         for ngram in ngrams:
-            probability *= smoothed_model.get(ngram, 1 / (self.unigram_freqs[ngram[:-1]] + self.vocabulary_size))
-        
+            probability *= smoothed_model.get(
+                ngram, 1 / (self.unigram_freqs[ngram[:-1]] + self.vocabulary_size)
+            )
+
         return probability
 
     def get_ngram_frequencies(self):
