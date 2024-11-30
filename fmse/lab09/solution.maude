@@ -1,0 +1,72 @@
+mod SYNTAX is 
+    protecting NAT .
+
+    sort Exp .
+    sort Id .
+    ops a b x n : -> Id .
+    subsorts Id Nat < Exp .
+
+    op _/_ : Exp Exp -> Exp [assoc prec 31] .
+    op _+_ : Exp Exp -> Exp [ditto] .
+    
+    op _++ : Id -> Exp [prec 30] .
+    op ++_ : Id -> Exp [prec 30] . 
+endm
+
+mod SEM is 
+    protecting SYNTAX .
+
+    sort State .
+
+    sort Seq .
+    subsort Exp < Seq .
+    op empty : -> Seq .
+    op H : -> Exp .
+    op _~>_ : Seq Seq -> Seq [assoc prec 98 id: empty] .
+
+    op <_;_> : Seq Mem -> State .
+
+    sort Mem .
+    op _|->_ : Id Nat -> Mem [prec 40] .
+    op nil : -> Mem . 
+    op __ : Mem Mem -> Mem [assoc comm prec 90 id: nil] .
+
+
+    var X : Id .
+    var S : Seq .
+    vars E1 E2 : Exp .
+    vars M : Mem . 
+    vars N N1 N2 : Nat .
+
+    op isResult : Exp -> Bool .
+    eq isResult(N) = true .
+    eq isResult(E1) = false [owise] .
+
+
+    crl [plus1] : < E1 + E2 ~> S ; M > => < E1 ~> H + E2 ~> S ; M > if not isResult(E1) .
+    crl [plus2] : < E1 + E2 ~> S ; M > => < E2 ~> E1 + H ~> S ; M > if not isResult(E2) .
+    crl [div1]  : < E1 / E2 ~> S ; M > => < E1 ~> H / E2 ~> S ; M > if not isResult(E1) .
+    crl [div2]  : < E1 / E2 ~> S ; M > => < E2 ~> E1 / H ~> S ; M > if not isResult(E2) .
+
+    rl [plus1c] : < N ~> H + E2 ~> S ; M > => < N + E2 ~> S ; M > .
+    rl [plus2c] : < N ~> E1 + H ~> S ; M > => < E1 + N ~> S ; M > .
+    rl [div1c] : < N ~> H / E2 ~> S ; M > => < N / E2 ~> S ; M > .
+    rl [div2c] : < N ~> E1 / H ~> S ; M > => < E1 / N ~> S ; M > .
+
+    rl [lookup] : < X ~> S ; ((X |-> N) M) > => < N ~> S ; ((X |-> N) M) > .
+    rl [inc-r] : < X ++ ~> S ; ((X |-> N) M) > => < N ~> S ; ((X |-> N + 1) M) > .
+    rl [inc-l] : < ++ X ~> S ; ((X |-> N) M) > => < N + 1 ~> S ; ((X |-> N + 1) M) > .
+    rl [div] : < N1 / N2 ~> S ; M > => < N1 quo N2 ~> S ; M > .
+
+endm
+
+
+--- search in SEM : < (x ++) / (++ x) ; (x |-> 0) > =>! S:State .
+--- Solution 1: < 0 ; x |-> 2 >
+--- Solution 2: < 1 ; x |-> 2 >
+
+--- search in SEM : < (++ x) / (x ++) ; (x |-> 0) > =>! S:State .
+--- Solution 1: < 1 ; x |-> 2 >
+
+--- search in SEM : < ((++ x) / (x ++)) / (x ++) ; (x |-> 0) > =>! S:State .
+--- Solution 1: < 0 ; x |-> 3 >
