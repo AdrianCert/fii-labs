@@ -1,0 +1,8 @@
+*.cs
+*.csproj
+*.deps.json
+*.dll
+*.exe
+*.pdb
+obj/
+*.runtimeconfig.json
